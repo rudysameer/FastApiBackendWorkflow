@@ -1,0 +1,15 @@
+name: Devlopment Workflow Pipeline
+
+on:
+  push:
+    branches:
+      - "development"
+
+jobs:
+  call-reuseable:
+    uses: ./.github/workflows/reuseable-fastapi-workflow.yml
+    with:
+      python-version: '3.11'
+      environment_name: 'development'
+    secrets: inherit
+  

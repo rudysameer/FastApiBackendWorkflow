@@ -1,0 +1,15 @@
+name: Proudction CICD Pipeline
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  call-reuseable:
+    uses: ./.github/workflows/reuseable-fastapi-workflow.yml
+    with:
+      python-version: '3.11'
+      environment_name: 'production'
+    secrets: inherit
+    
