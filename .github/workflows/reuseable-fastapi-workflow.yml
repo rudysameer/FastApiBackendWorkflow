@@ -117,6 +117,10 @@ jobs:
             echo "Warining could not add server to known_hosts"
             echo "Will rely on StrictHostKeyChecking=no for this deployment"
           }
+          if [-f ~/.ssh/known_hosts ]; then
+            echo "SSH known_hosts file content:"
+            chmod 644 ~/.ssh/known_hosts
+          fi
 
       - name: Test SSH Connection
         run: |
