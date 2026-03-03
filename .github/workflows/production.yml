@@ -12,4 +12,3 @@ jobs:
       python-version: '3.11'
       environment_name: 'production'
     secrets: inherit
-    
