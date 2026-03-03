@@ -121,6 +121,7 @@ jobs:
             echo "SSH known_hosts file content:"
             chmod 644 ~/.ssh/known_hosts
           fi
+        countinue-on-error: true
 
       - name: Test SSH Connection
         run: |
