@@ -113,17 +113,17 @@ jobs:
           --exclude='*.pyc' \
           ./ /tmp/deploy/
 
-      - name: Set up SSH for Deployment
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          cat ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || {
-            echo "Warining could not add server to known_hosts"
-            echo "Will rely on StrictHostKeyChecking=no for this deployment"
+            echo "Warning: Could not add server to known_hosts via ssh-keyscan"
+            echo "Will rely on StrictHostKeyChecking=no"
           }
           if [ -f ~/.ssh/known_hosts ]; then
-            echo "SSH known_hosts file content:"
             chmod 644 ~/.ssh/known_hosts
           fi
 
