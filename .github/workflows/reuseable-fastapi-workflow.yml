@@ -42,7 +42,7 @@ jobs:
 
       - name: Setting up environment variables for deployment
         run: |
-          echo "{{ secrets.ENV_FILE_CONTENT }}" >> .env
+          echo "${{ secrets.ENV_FILE_CONTENT }}" >> .env
 
       - name: Check App Import
         run: |
