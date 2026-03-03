@@ -127,7 +127,7 @@ jobs:
           --exclude='__pycache__' \
           --exclude='*.pyc' \
           /tmp/deploy/ "/home/${{ secrets.SERVER_USERNAME }}/${{ env.REPO_NAME }}/"
-          
+
       - name: Pm2 Simulation for testing in the runner
         run: |
           echo "Simulating PM2 restart for testing in the runner"
@@ -141,14 +141,14 @@ jobs:
 
   discord_notification:
     name: Notify Discord
-    needs: deploy
+    needs: build-and-deploy
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment_name }}
     if: always()
     steps:
       - name: Send Discord Notification
         run: |
-          STATUS="${{ needs.deploy.result }}"
+          STATUS="${{ needs.build-and-deploy.result }}"
 
           if [ "$STATUS" = "success" ]; then
             MESSAGE="✅ FastAPI Deployment Successful!"
