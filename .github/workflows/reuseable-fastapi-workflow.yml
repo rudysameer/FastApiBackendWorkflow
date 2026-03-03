@@ -40,6 +40,10 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Setting up environment variables for deployment
+        run: |
+          echo "{{ secrets.ENV_FILE_CONTENT }}" >> .env
+
       - name: Check App Import
         run: |
           source myvenv/bin/activate
