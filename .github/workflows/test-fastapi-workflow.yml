@@ -114,7 +114,7 @@ jobs:
 
       - name: Prepare Deployment directory on localhost
         run: |
-          mkdir -p '/home/${{ secrets.SERVER_USERNAME }}/${{ env.REPO_NAME }}'
+          mkdir -p '/tmp/${{ secrets.SERVER_USERNAME }}/${{ env.REPO_NAME }}'
 
       - name: Deploy files to server via rsync
         run: |
@@ -126,7 +126,7 @@ jobs:
           --exclude='*.log' \
           --exclude='__pycache__' \
           --exclude='*.pyc' \
-          /tmp/deploy/ "/home/${{ secrets.SERVER_USERNAME }}/${{ env.REPO_NAME }}/"
+          /tmp/deploy/ "/tmp/${{ secrets.SERVER_USERNAME }}/${{ env.REPO_NAME }}/"
 
       - name: Pm2 Simulation for testing in the runner
         run: |
