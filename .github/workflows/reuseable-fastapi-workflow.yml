@@ -82,17 +82,24 @@ jobs:
             echo "From Environment Secrets SERVER_USERNAME is SET which is ${{ secrets.SERVER_USERNAME }}"
           fi
 
-          if [ -z "${{ vars.PORT }}" ]; then
-            echo "Secrets PORT is EMPTY"
+          if [ -z "${{ vars.APP_PORT }}" ]; then
+            echo "Secrets APP_PORT is EMPTY"
           else
-            echo "From Environment vars PORT is SET which is ${{ vars.PORT }}"
+            echo "From Environment vars APP_PORT is SET which is ${{ vars.APP_PORT }}"
           fi
 
-          if [ -z "${{ vars.ENVIRONMENT }}" ]; then
-            echo "ENVIRONMENT is EMPTY"
+          if [ -z "${{ secrets.ENV_FILE_CONTENT }}" ]; then
+            echo "ENV_FILE_CONTENT is EMPTY"
           else
-            echo "From Environment vars ENVIRONMENT is SET which is ${{ vars.ENVIRONMENT }}"
+            echo "From Environment secrets ENV_FILE_CONTENT is SET which is ${{ secrets.ENV_FILE_CONTENT }}"
           fi      
+
+          if [ -z "${{ vars.APP_HOST_IP }}" ]; then
+            echo "Secrets APP_HOST_IP is EMPTY"
+          else
+            echo "From Environment vars APP_HOST_IP is SET which is ${{ vars.APP_HOST_IP }}"
+          fi
+
 
 
       - name: Create Clean Deployment copy
