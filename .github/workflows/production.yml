@@ -7,7 +7,7 @@ on:
 
 jobs:
   call-reuseable:
-    uses: ./.github/workflows/reuseable-fastapi-workflow.yml
+    uses: ./.github/workflows/test-fastapi-workflow.yml
     with:
       python-version: '3.11'
       environment_name: 'production'

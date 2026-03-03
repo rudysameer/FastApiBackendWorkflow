@@ -1,0 +1,163 @@
+name: Reusable FastAPI CICD Workflow
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Python version to use'
+        required: true
+        default: '3.11'
+        type: string
+
+      environment_name:
+        description: 'Environment to deploy to'
+        required: true
+        type: string
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment_name }}
+    timeout-minutes: 45
+
+    env:
+      PYTHON_VERSION: ${{ inputs.python-version }}
+      REPO_NAME: ${{ github.event.repository.name }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m venv myvenv
+          source myvenv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Setting up environment variables for deployment
+        run: |
+          echo "${{ secrets.ENV_FILE_CONTENT }}" >> .env
+
+      - name: Check App Import
+        run: |
+          source myvenv/bin/activate
+          python -c "from app.main import app"
+      
+      - name: Lint code with flake8
+        run: |
+          source myvenv/bin/activate
+          pip install flake8
+          flake8 app
+
+      - name: Run tests with pytest
+        run: |
+          source myvenv/bin/activate
+          pip install pytest
+          if [ -d "tests" ]; then
+            pytest tests
+          else
+            echo "No tests directory found. Skipping tests."
+          fi
+
+      - name: Debug Secrets presenece
+        run: |
+          echo "Checking for secrets presence"
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "SSH_PRIVATE_KEY is not set"
+            exit 1
+          else
+            echo "From Environment Secrets SSH_PRIVATE_KEY is SET which is ${{ secrets.SSH_PRIVATE_KEY }}"
+          fi
+
+          if [ -z "${{ secrets.SERVER_USERNAME }}" ]; then
+            echo "SERVER_USERNAME is EMPTY"
+            exit 1
+          else
+            echo "From Environment Secrets SERVER_USERNAME is SET which is ${{ secrets.SERVER_USERNAME }}"
+          fi
+
+          if [ -z "${{ vars.PORT }}" ]; then
+            echo "Secrets PORT is EMPTY"
+          else
+            echo "From Environment vars PORT is SET which is ${{ vars.PORT }}"
+          fi
+
+          if [ -z "${{ vars.ENVIRONMENT }}" ]; then
+            echo "ENVIRONMENT is EMPTY"
+          else
+            echo "From Environment vars ENVIRONMENT is SET which is ${{ vars.ENVIRONMENT }}"
+          fi      
+
+
+      - name: Create Clean Deployment copy
+        run: |
+          mkdir -p /tmp/deploy
+          rsync -av --exclude='myvenv' \
+          --exclude='.git' \
+          --exclude='tests' \
+          --exclude='.github' \
+          --exclude='*.log' \
+          --exclude='__pycache__' \
+          --exclude='.pytest_cache' \
+          --exclude='*.pyc' \
+          ./ /tmp/deploy/
+
+      - name: Set up SSH for Deployment
+        run: |
+          echo "Simulating SSH setup for deployment in the runner"
+
+      - name: Prepare Deployment directory on localhost
+        run: |
+          mkdir -p '/home/${{ secrets.SERVER_USERNAME }}/${{ env.REPO_NAME }}'
+
+      - name: Deploy files to server via rsync
+        run: |
+          rsync -avz --delete \
+          --exclude='myvenv' \
+          --exclude='.git' \
+          --exclude='tests' \
+          --exclude='.github' \
+          --exclude='*.log' \
+          --exclude='__pycache__' \
+          --exclude='*.pyc' \
+          /tmp/deploy/ "/home/${{ secrets.SERVER_USERNAME }}/${{ env.REPO_NAME }}/"
+          
+      - name: Pm2 Simulation for testing in the runner
+        run: |
+          echo "Simulating PM2 restart for testing in the runner"
+          echo "Would run: pm2 restart /tmp/server/${{ env.REPO_NAME }}/server.js --name ${{ env.REPO_NAME }}"
+
+          
+      - name: Clean up
+        run: |
+          rm -rf /tmp/deploy
+          rm -rf ~/.ssh/deploy_key
+
+  discord_notification:
+    name: Notify Discord
+    needs: deploy
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment_name }}
+    if: always()
+    steps:
+      - name: Send Discord Notification
+        run: |
+          STATUS="${{ needs.deploy.result }}"
+
+          if [ "$STATUS" = "success" ]; then
+            MESSAGE="✅ FastAPI Deployment Successful!"
+          else
+            MESSAGE="❌ FastAPI Deployment Failed!"
+          fi
+
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d "{\"content\": \"${MESSAGE}\n\n 🌍 Environment: ${{ inputs.environment_name }}.\n\n 📦 Repository: ${{ github.repository }}.\n\n 🌿 Workflow: ${{ github.workflow }}.\n\n 🌿 Branch: ${{ github.ref_name }} \n\n 👤 Triggered-BY: ${{ github.actor }} \n\n Run ID: ${{ github.run_id }}\"}" \
+            ${{ secrets.DISCORD_WEBHOOK }}
+          
