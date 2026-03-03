@@ -121,7 +121,6 @@ jobs:
             echo "SSH known_hosts file content:"
             chmod 644 ~/.ssh/known_hosts
           fi
-        continue-on-error: true
 
       - name: Test SSH Connection
         run: |
@@ -214,8 +213,6 @@ jobs:
             Status: ${{ needs.build-and-deploy.result }}
             ${{ needs.build-and-deploy.result == 'success' && '✅ deployment successful!' || '❌ deployment failed!' }}
           SLACK_FOOTER: "GitHub Actions • ${{ github.workflow }}"
-        continue-on-error: true
-
           
 
 
