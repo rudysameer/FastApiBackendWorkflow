@@ -100,8 +100,6 @@ jobs:
             echo "From Environment vars APP_HOST_IP is SET which is ${{ vars.APP_HOST_IP }}"
           fi
 
-
-
       - name: Create Clean Deployment copy
         run: |
           mkdir -p /tmp/deploy
