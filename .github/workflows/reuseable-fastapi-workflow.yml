@@ -6,7 +6,8 @@ on:
         description: 'Python version to use'
         required: true
         default: '3.11'
-        
+        type: string
+
       environment_name:
         description: 'Environment to deploy to'
         required: true
